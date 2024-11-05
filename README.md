@@ -19,5 +19,5 @@ Use it here (without image) :
 
 Or download it :
 
-Put [index_better.html](https://github.com/seb1k/skype-better-parser/blob/main/index_better.html) in the same directory as the exported conversation (where messages.json is) and open it.
+Put [index_better.html](https://github.com/seb1k/skype-better-parser/blob/main/index_better.html) in the same directory as "messages.json" and open it.
 
