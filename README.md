@@ -3,7 +3,7 @@
 # skype-better-parser
 
 
-I needed a better parser than the original to read my old conversations, I share it here
+A better parser than the original :
 
 
 - Show images in conversation
