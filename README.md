@@ -8,7 +8,12 @@ I needed a better parser than the original to read my old conversations, I share
 - Better interface
 - Archive open in 1 click
 
-Installation :
+
+Here :
+
+[index_better.html](https://seb1k.github.io/skype-better-parser/index_better.html)
+
+
+Or Installation :
 Put index_better.html in the same directory as the exported converation and open it.
 
-test [index_better.html]
