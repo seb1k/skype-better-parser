@@ -1,0 +1,280 @@
+<!DOCTYPE html><html>
+<head><!-- Copyright © Microsoft. All rights reserved. --><title>Archived conversations</title>
+
+<style>
+@font-face{font-family:"Segoe UI Local";font-weight:200;src:local("Segoe UI Light")}
+@font-face{font-family:"Segoe UI Local";font-weight:400;src:local("Segoe UI")}
+@font-face{font-family:"Segoe UI Local";font-weight:600;src:local("Segoe UI Semibold")}
+body,html{height:100%}body{background-color:#f2f2f2;font:1em "Segoe UI Local","Segoe WP","Segoe UI Web",Tahoma,"Helvetica Neue",Helvetica,"Meiryo UI",Meiryo,Arial Unicode MS,sans-serif;width:100%;margin:0 auto}body.conversation{overflow-x:hidden}
+.left{display:block;position:absolute;left:0;top:0;width:30%;max-width:420px;height:100%;margin:0;overflow:hidden}
+.right{display:block;position:absolute;right:0;top:0;width:70%;height:100%;overflow:hidden}
+div#selected-conversation-placeholder{display:block;width:100%;max-width:1000px;top:120px;bottom:0;position:absolute;overflow:auto}
+.object{width:100%;height:98%;overflow-x:hidden;overflow-x:hidden}body.index{overflow:hidden}
+div.header{position:fixed;top:0;left:1rem;width:100%;background-color:#f2f2f2;margin-bottom:1rem;padding-bottom:1rem}
+h1{color:#0b0b10;font-size:1.5em;top:0;left:1rem;padding-left:1rem;padding-top:1rem;padding-bottom:1rem;margin-top:0;margin-bottom:1rem;width:100%;background-color:#f2f2f2}
+
+h1.conversations{position:static;margin-bottom:0;padding-left:7rem;background:url(skype.svg) 1rem 1rem no-repeat;margin-bottom:0}
+
+div.author{color:#626f82;padding-bottom:.5rem}div.quote:before{display:block;height:0;content:"“";margin-left:-1.5rem;font:italic 50px/1 Georgia,serif;color:#999}
+div.quote{font-style:italic;margin-left:1.5rem;margin-bottom:.5rem}
+span.author{color:#626f82}
+span.timestamp{color:#626f82;padding-left:.5rem;font-size:small}
+span.timestamp-conv{color:#626f82;padding-left:.5rem;font-size:small}
+span.messageCount{color:#626f82;font-size:small;}
+span.at:before{content:"@"}
+span.at{font-style:italic;color:#626f82}
+ul{list-style-type:none;padding-left:1rem;padding-right:1rem;padding-top:1rem;margin-top:1rem;margin-bottom:2rem;padding-bottom:2rem}
+ul.conversations{position:absolute;top:8rem;bottom:0;width:100%;overflow-y:scroll}
+
+li.message{border-radius:12px;background-color:#fff;color:#0b0b10;padding:8px 16px;margin:.5rem auto;display:inline-block}
+
+li.conversations{
+background-color:#f2f2f2;
+color:#0b0b10;
+padding-left:.25rem;
+padding-top:.5rem;
+padding-bottom:.5rem;
+margin:0 auto;
+word-wrap:break-word;
+cursor:pointer;
+}
+
+li.conversations:hover{
+background-color:#DCF1FA;
+}
+
+li.conversations-sel{background-color:#c7edfc;color:#0b0b10;padding-left:.25rem;padding-top:.5rem;padding-bottom:.5rem;margin:0 auto;word-wrap:break-word;border-bottom-style:solid;border-bottom-width:thin;border-bottom-color:#626f82}
+.form{position:absolute;display:block;top:100px;left:50px;right:50px;text-align:left}
+.form fieldset{border-radius:5px;border-color:#626f82;background-color:#c7edfc}
+.primaryCta:hover,.promo a:hover .promo-link{color:#fff;background-color:#0b64a4}
+.btn{box-sizing:border-box;border:1px solid transparent;border-radius:100px;cursor:pointer;display:inline-block;font-size:16px;font-weight:600;line-height:24px;position:relative;text-align:center;text-decoration:none!important;word-wrap:break-word;padding:12px 30px}.primaryCta{color:#fff;background-color:#0078ca}#progress{display:none}pre{display:inline}ul.details{list-style-type:circle;padding-left:1rem;padding-right:1rem;padding-top:0;margin-top:0;margin-bottom:10px;padding-bottom:10px}
+#selected-conversation-header{margin-top:50px}
+.step-1,.step-2{display:none}
+</style>
+</head>
+<body>
+<div class="left step-2">
+<div class="header">
+<h1 class="conversations">Archived conversations</h1>
+<table class="step-2">
+<tbody><tr><th>User</th><td id="hdr-user"></td></tr><tr><th>Exported</th><td id="hdr-exported"></td></tr><tr><th>Total</th><td id="hdr-stats"></td></tr></tbody></table>
+</div><ul class="conversations step-2" id="conversations"></ul></div><div id="selected-conversation step-2" class="right">
+<h1 class="conversation step-2" id="selected-conversation-header"></h1><div id="selected-conversation-placeholder" class="step-2"><ul class="messages" id="messages"></ul></div></div><div class="step-1 form">
+<form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post"><fieldset><h3>View your Skype conversation history export</h3><ol>
+<li>Request an <a href="https://go.skype.com/export" target="_blank">export of your Skype conversations</a></li><li>Once available, <a href="https://go.skype.com/export" target="_blank">download the exported file</a></li><li>Unpack the TAR file<ul class="details">
+<li>On Windows, you can use the free <a href="https://www.7-zip.org/" target="_blank">7-zip</a> or similar tool</li><li>
+On Mac, you can double-click the file to extract it</li></ul></li><li><strong>Select the&nbsp;</strong><pre>messages.json</pre><strong>&nbsp;file from the export:&nbsp;</strong>
+
+<input type="file" accept=".json" id="fileinput" onchange="" style="cursor:pointer;height:30px;">
+
+</li><li>
+</li></ol><br><div id="progress">Processing...</div></fieldset></form>
+</div>
+<script type="text/javascript">
+
+!function(){"use strict";
+function c(e){return e.displayName?u(e.displayName):p(e.id)}
+
+function m(e){
+
+var previousAuthor="";
+var previous_r="";
+var show_header=1;
+var userID = document.getElementById("hdr-user").textContent;
+
+e.preventDefault();
+
+var theLIdata = e.target.closest('li')
+var t=parseInt(theLIdata.getAttribute("data-conv"),10),n=document.getElementById("messages");
+
+// supprime autre bgcolor
+for(var n2=document.getElementsByClassName('conversations'),a=0;a<n2.length;a++)
+	n2[a].style.backgroundColor=""
+
+theLIdata.style.backgroundColor="#C7EDFC"
+
+
+n.innerHtml="",n.textContent="",document.getElementById("selected-conversation-header").textContent=c(window.Skype.conversations[t]);
+
+//for(var a=window.Skype.conversations[t]&&window.Skype.conversations[t].MessageList?window.Skype.conversations[t].MessageList:[],s=0;s<a.length;s++)
+for(var a=window.Skype.conversations[t]&&window.Skype.conversations[t].MessageList?window.Skype.conversations[t].MessageList:[],s=a.length-1;s>=0;s--)
+	if(""!==a[s].content)
+		{
+		var author = a[s].from;
+		
+		if(author!=previousAuthor)
+			{
+			var newdiv=document.createElement("div");
+			newdiv.style.width="80%"
+			n.appendChild(newdiv)
+			
+			if(p(author)==userID)
+				{
+				newdiv.style.cssFloat = 'right';
+				}
+			else
+				{
+				newdiv.style.cssFloat = 'left';
+				}
+			}
+			
+		if(author==previousAuthor)
+			{
+			show_header=0;
+			}
+		else
+			{
+			show_header=1;
+			previousAuthor=author
+			}
+		
+		var r=document.createElement("li");
+		r.className="message"
+		r.setAttribute("id",a[s].id);
+		
+		if(show_header)
+			{
+			var o=document.createElement("div");
+			r.appendChild(o);
+			if(p(author)!=userID)
+				{
+				var i=document.createElement("span");
+				i.className="author"
+				i.textContent=p2(author)
+				o.appendChild(i);
+				}
+			var l=document.createElement("span");
+			l.className="timestamp"
+			l.textContent=new Date(a[s].originalarrivaltime).toLocaleString()
+			o.appendChild(l);
+			}
+		else
+			{
+			//r.style.paddingTop=0;
+			r.style.marginTop="2px";
+			//previous_r.style.paddingBottom=0;
+			previous_r.style.marginBottom=0;
+			}
+		var d=document.createElement("div");
+		d.className="message-body"
+		
+		var need_innerHTML = replace_img(a[s].content)
+		if(need_innerHTML)
+			{
+			d.innerHTML=need_innerHTML
+			}
+		else
+			{
+			d.innerHTML= u(a[s].content)
+			}
+		
+		var divblock=document.createElement("div");
+		newdiv.appendChild(divblock)
+		
+		//divblock.style.cssFloat = newdiv.style.cssFloat
+		divblock.style.textAlign = newdiv.style.cssFloat
+		
+		r.appendChild(d)
+		//newdiv.appendChild(r)
+		divblock.appendChild(r)
+		if(p(author)==userID)
+			{
+			r.style.backgroundColor="#DBF4FD"
+			r.style.textAlign = "right";
+			}
+		else
+			{
+			r.style.backgroundColor="#F2F6F9"
+			}
+		previous_r=r
+		}
+
+n.appendChild(newdiv)
+document.getElementById('selected-conversation-placeholder').scrollTo(0,0) 
+}
+
+
+
+
+function a(e,t){document.getElementById(e).textContent=t}
+function p(e){return e.replace(/^8:/,"")}
+function p2(e){return e.replace(/^8:live:/,"")}
+function u(e){return e.replace(/&apos;/g,"'").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,"\"").replace(/<a/g,"<a target='_blank'")}
+
+function s(e,t){
+for(var n=document.getElementsByClassName(e),a=0;a<n.length;a++)
+	n[a].style.display=t?"block":"none"
+	}
+
+//document.getElementById("btnLoad").addEventListener("click",function(){
+
+document.getElementById("fileinput").addEventListener("change",function(){
+	var e,t,n;
+	"function"==typeof window.FileReader?(e=document.getElementById("fileinput"))&&e.files?e.files[0]?(document.getElementById("progress").style.display="block",t=e.files[0],(n=new FileReader).onload=function(e){var t=e.target.result;
+	!function(e){if(e&&e.userId&&e.conversations&&e.exportDate){var t=new Date(e.exportDate),n=e.conversations.filter(function(e){return e.id&&"ALL"!==e.id&&!/@cast\.skype$/.test(e.id)&&e.MessageList&&e.MessageList.length});
+	a("hdr-user",p(e.userId)),a("hdr-exported",t.toLocaleString()),a("hdr-stats",n.length+" conversations"),
+		function(e){
+		for(var t=document.getElementById("conversations"),n=0;		n<e.length;		n++)
+			{
+			var a=document.createElement("li");
+			a.className="conversations";
+			a.addEventListener("click",m)
+			a.setAttribute("data-conv",n)
+			
+			var s=document.createElement("span");
+			s.textContent=c(e[n]),a.appendChild(s);
+			var r=document.createElement("div");
+			a.appendChild(r);
+			var o=document.createElement("span");
+			o.className="messageCount",o.textContent=e[n].MessageList.length+" messages",r.appendChild(o);
+			var i=e[n].properties&&e[n].properties.lastimreceivedtime?e[n].properties.lastimreceivedtime:null;
+			if(i){var l=document.createElement("span");
+			l.className="timestamp-conv",l.textContent="Last from: "+new Date(i).toLocaleString(),r.appendChild(l)}t.appendChild(a)
+			}
+			
+	//	for(var d=document.getElementsByClassName("conv-link"),n=0;	n<d.length;	n++)
+		//	d[n].addEventListener("click",m)
+		
+		}(n),window.Skype={},window.Skype.conversations=n,s("step-1",!1),s("step-2",!0)}else alert("Sorry, we are unable to load this file")}(JSON.parse(t))},n.readAsText(t,"utf8")):alert("Please select a file before clicking 'Load'"):alert("This browser doesn't seem to support the 'files' property of file inputs."):alert("The file API isn't supported on this browser. Please use a more modern browser.")}),s("step-2",!1),s("step-1",!0)}();
+		
+		
+function replace_img(html){
+
+if(html.indexOf("<URIObject")!=-1)
+	{
+	var startpos = html.indexOf('uri="')
+	var endpos = html.indexOf('"',startpos+5)
+	var full_link=html.substring(startpos+5, endpos)
+	
+	var onlyfile = full_link.split('/').pop()
+	
+	if(!startpos || !endpos) return false;
+	
+	
+	var startpos = html.indexOf('v="')
+	var endpos = html.indexOf('"',startpos+3)
+	var full_link=html.substring(startpos+3, endpos)
+	
+	var original_file = full_link.split('/').pop()
+	var original_file_ext = original_file.split('.').pop()
+	
+	var fileOK = "./media/"+onlyfile+".1."+original_file_ext
+
+	//console.log(original_file_ext)
+	//console.log(html)
+	
+	
+	if(original_file_ext=="png")
+		{
+		return "<a href='"+fileOK+"' target='_blank'><img src='"+fileOK+"' style='max-width: 300px;'/></a>";
+		}
+	else
+		return "<a href='"+fileOK+"' target='_blank'>"+original_file+"</a>";
+
+
+
+	}
+
+return false
+}
+</script></body></html>
