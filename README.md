@@ -1,6 +1,7 @@
 # skype-better-parser
 
-I needed a better parser to read my old conversation so I did it
+I needed a better parser than the original to read my old conversations, I share it here
+
 
 - Show images in conversation
 - Clickable links
